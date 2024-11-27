@@ -1,3 +1,4 @@
+import { getDistanceBetweenCoordinates } from '@/http/utils/get-distance-between-coordinates'
 import { CheckInsRepository } from '@/repositories/check-ins-repository'
 import { GymsRepository } from '@/repositories/gyms-repository'
 import { Checkin } from '@prisma/client'
@@ -23,6 +24,8 @@ export class CheckInUseCase {
   async execute({
     gymId,
     userId,
+    userLatitude,
+    userLongitude,
   }: CheckInUseCaseRequest): Promise<CheckInUseCaseResponse> {
     const gym = await this.gymsRepository.findById(gymId)
 
@@ -30,7 +33,22 @@ export class CheckInUseCase {
       throw new ResourceNotFoundError()
     }
 
-    // todo: calcular distancia entra a academia e o usuario
+    const distance = getDistanceBetweenCoordinates(
+      {
+        latitude: userLatitude,
+        longitude: userLongitude,
+      },
+      {
+        latitude: gym.latitude.toNumber(),
+        longitude: gym.longitude.toNumber(),
+      },
+    )
+
+    const MAX_DISTANCE_IN_KILOMETERS = 0.1
+
+    if (distance > MAX_DISTANCE_IN_KILOMETERS) {
+      throw new Error()
+    }
 
     const checkInOnSameDate = await this.checkInsRepository.findByUserIdOnDate(
       userId,
