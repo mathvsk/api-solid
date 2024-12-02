@@ -1,4 +1,4 @@
-import { refresh } from '@/use-cases/refresh'
+import { refresh } from '@/http/controllers/users/refresh'
 import { FastifyInstance } from 'fastify'
 import { verifyJWT } from '../../middlewares/verify-jwt'
 import { authenticate } from './authenticate'

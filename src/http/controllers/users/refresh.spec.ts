@@ -1,5 +1,4 @@
 import { app } from '@/app'
-import { createAndAuthenticateUser } from '@/utils/test/create-and-authenticate-user'
 import request from 'supertest'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
@@ -13,13 +12,22 @@ describe('Refresh Token (e2e)', () => {
   })
 
   it('should be able to refresh a token', async () => {
-    const { token } = await createAndAuthenticateUser(app)
+    await request(app.server).post('/users').send({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123456',
+    })
 
-    const cookies = token.get('Set-Cookie')
+    const authResponse = await request(app.server).post('/sessions').send({
+      email: 'johndoe@example.com',
+      password: '123456',
+    })
+
+    const cookies = authResponse.get('Set-Cookie')
 
     const response = await request(app.server)
       .patch('/token/refresh')
-      .set('Cookie', cookies)
+      .set('Cookie', cookies!)
       .send()
     expect(response.status).toEqual(200)
     expect(response.body).toEqual({
